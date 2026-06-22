@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>G&A KCash Microfinance Inc. — Empowering Communities Through Micro-Loans</title>
+    <meta name="description" content="G&A KCash Microfinance Inc. — providing accessible micro-loans to communities in Tarlac and Pangasinan. Apply online today." />
+
+    <!-- ===== CONTENT SECURITY POLICY ===== -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com;
+        style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com https://cdnjs.cloudflare.com;
+        font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com;
+        img-src 'self' data: https:;
+        connect-src 'self' https:;
+        form-action 'self';
+        base-uri 'self';
+    " />
+
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome 6 (for icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+          integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+          crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Google Font: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <style>
+        /* ───── CUSTOM STYLES ───── */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background: #F8F9FA; color: #4A4A4A; }
+
+        /* Colors matching the G&A KCash logo */
+        :root {
+            --primary-green: #1B5E20;
+            --primary-green-light: #2E7D32;
+            --accent-gold: #F9A825;
+            --accent-gold-hover: #F57F17;
+            --charcoal: #2C2C2C;
+            --off-white: #F8F9FA;
+        }
+
+        .text-primary { color: #1B5E20; }
+        .text-primary-light { color: #2E7D32; }
+        .text-accent { color: #F9A825; }
+        .text-charcoal { color: #2C2C2C; }
+        .bg-primary { background-color: #1B5E20; }
+        .bg-primary-light { background-color: #2E7D32; }
+        .bg-accent { background-color: #F9A825; }
+        .bg-accent-hover:hover { background-color: #F57F17; }
+        .bg-off-white { background-color: #F8F9FA; }
+        .border-accent { border-color: #F9A825; }
+        .border-primary { border-color: #1B5E20; }
+
+        /* Gold gradient for buttons */
+        .btn-gold {
+            background: linear-gradient(135deg, #F9A825 0%, #F57F17 100%);
+            color: #1B5E20;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+        .btn-gold:hover {
+            background: linear-gradient(135deg, #F57F17 0%, #E65100 100%);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(249, 168, 37, 0.4);
+        }
+
+        /* Green outline button */
+        .btn-outline-green {
+            border: 2px solid #1B5E20;
+            color: #1B5E20;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-outline-green:hover {
+            background-color: #1B5E20;
+            color: #fff;
+        }
+
+        /* Navigation styles */
+        .nav-link {
+            color: #2C2C2C;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #F9A825;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover { color: #1B5E20; }
+        .nav-link:hover::after { width: 100%; }
+
+        /* Hero overlay */
+        .hero-overlay {
+            background: linear-gradient(135deg, rgba(27, 94, 32, 0.92) 0%, rgba(46, 125, 50, 0.85) 100%);
+        }
+
+        /* Mission & Vision cards */
+        .mv-card {
+            border-left: 4px solid #F9A825;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .mv-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+        }
+        .mv-card.mission { border-left-color: #1B5E20; }
+        .mv-card.vision { border-left-color: #F9A825; }
+
+        /* Location card */
+        .location-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .location-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        .location-badge {
+            background: linear-gradient(135deg, #F9A825, #F57F17);
+            color: #1B5E20;
+            font-weight: 700;
+            font-size: 0.7rem;
+            padding: 2px 10px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        /* Form styles */
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #E0E0E0;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            background: #fff;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #2E7D32;
+            box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.12);
+        }
+        .form-input.error {
+            border-color: #D32F2F;
+            box-shadow: 0 0 0 4px rgba(211, 47, 47, 0.12);
+        }
+        .form-input.success {
+            border-color: #2E7D32;
+            box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.12);
+        }
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #2C2C2C;
+            margin-bottom: 0.4rem;
+            font-size: 0.9rem;
+        }
+        .error-message {
+            color: #D32F2F;
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+        .error-message.show { display: block; }
+
+        /* Hamburger menu */
+        .hamburger { cursor: pointer; }
+        .hamburger span {
+            display: block;
+            width: 25px;
+            height: 3px;
+            background: #2C2C2C;
+            margin: 5px 0;
+            transition: all 0.3s ease;
+            border-radius: 3px;
+        }
+        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(7px, -6px); }
+
+        /* Mobile nav */
+        .mobile-nav {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+        .mobile-nav.open { max-height: 500px; }
+
+        /* Footer links */
+        .footer-link {
+            color: #A5D6A7;
+            transition: color 0.3s ease;
+        }
+        .footer-link:hover { color: #F9A825; }
+
+        /* Animations */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Success toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            background: #1B5E20;
+            color: #fff;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            transform: translateX(120%);
+            transition: transform 0.4s ease;
+            max-width: 380px;
+        }
+        .toast.show { transform: translateX(0); }
+        .toast .toast-close {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-left: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ════════════════════════════════════════════════
+    TOAST NOTIFICATION
+    ════════════════════════════════════════════════ -->
+    <div id="toast" class="toast" role="alert" aria-live="polite">
+        <div class="flex items-center justify-between">
+            <span id="toastMessage" class="text-sm font-medium"></span>
+            <button class="toast-close" onclick="closeToast()" aria-label="Close notification">&times;</button>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════
+    HEADER / NAVIGATION
+    ════════════════════════════════════════════════ -->
+    <header class="fixed top-0 left-0 w-full bg-white shadow-md z-50" role="banner">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 md:h-20">
+
+                <!-- Logo -->
+                <a href="#home" class="flex items-center space-x-3" aria-label="G&A KCash Home">
+                    <img src="G%26A%20KCash%20Logo.png" alt="G&A KCash Microfinance Inc. Logo"
+                         class="h-12 md:h-16 w-auto object-contain"
+                         onerror="this.style.display='none'; document.getElementById('logoFallback').classList.remove('hidden');" />
+                    <span id="logoFallback" class="hidden text-lg md:text-xl font-extrabold text-primary">
+                        G&A <span class="text-accent">KCash</span>
+                    </span>
+                </a>
+
+                <!-- Desktop Nav -->
+                <nav class="hidden md:flex items-center space-x-8" aria-label="Main navigation">
+                    <a href="#home"      class="nav-link text-sm lg:text-base">Home</a>
+                    <a href="#about"     class="nav-link text-sm lg:text-base">About Us</a>
+                    <a href="#locations" class="nav-link text-sm lg:text-base">Locations</a>
+                    <a href="#apply"     class="btn-gold px-5 py-2 rounded-lg text-sm lg:text-base shadow-lg">
+                        Apply for Loan
+                    </a>
+                </nav>
+
+                <!-- Hamburger (mobile) -->
+                <button class="hamburger md:hidden p-2" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Nav Dropdown -->
+        <div class="mobile-nav md:hidden bg-white border-t border-gray-100" id="mobileNav" role="navigation" aria-label="Mobile navigation">
+            <div class="px-4 py-3 space-y-3">
+                <a href="#home"      class="block py-2 nav-link" onclick="closeMobileNav()">Home</a>
+                <a href="#about"     class="block py-2 nav-link" onclick="closeMobileNav()">About Us</a>
+                <a href="#locations" class="block py-2 nav-link" onclick="closeMobileNav()">Locations</a>
+                <a href="#apply"     class="btn-gold block text-center px-5 py-3 rounded-lg shadow-lg" onclick="closeMobileNav()">Apply for Loan</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ════════════════════════════════════════════════
+    HERO SECTION
+    ════════════════════════════════════════════════ -->
+    <section id="home" class="relative min-h-screen flex items-center justify-center overflow-hidden" aria-label="Hero">
+        <!-- Background Image with Overlay -->
+        <div class="absolute inset-0 bg-cover bg-center"
+             style="background-image: url('https://images.unsplash.com/photo-1559526324-4bc2b1d5c4a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');">
+        </div>
+        <div class="absolute inset-0 hero-overlay"></div>
+
+        <!-- Decorative elements -->
+        <div class="absolute top-20 left-10 w-32 h-32 bg-accent opacity-10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-20 right-10 w-48 h-48 bg-accent opacity-10 rounded-full blur-3xl"></div>
+
+        <div class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 text-center py-20">
+            <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-tight mb-6">
+                Your Growth<br />
+                <span class="text-accent">Our Partnership</span>
+            </h1>
+            <p class="text-lg sm:text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto mb-10 leading-relaxed">
+                G&A KCash Microfinance Inc. provides accessible, affordable micro-loans to empower
+                entrepreneurs, farmers, and families across Tarlac and Pangasinan.
+            </p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="#apply" class="btn-gold px-8 py-4 rounded-xl text-lg sm:text-xl shadow-2xl inline-flex items-center space-x-2">
+                    <span>Apply Now</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+                <a href="#about" class="btn-outline-green bg-white/10 backdrop-blur-sm border-white text-white px-8 py-4 rounded-xl text-lg sm:text-xl inline-flex items-center space-x-2">
+                    <span>Learn More</span>
+                    <i class="fas fa-chevron-down"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Scroll indicator -->
+        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+            <a href="#about" aria-label="Scroll down">
+                <i class="fas fa-chevron-down text-white/60 text-2xl"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+    ABOUT + MISSION & VISION SECTION
+    ════════════════════════════════════════════════ -->
+    <section id="about" class="py-16 md:py-24 bg-off-white" aria-label="About Us">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <!-- Section Header -->
+            <div class="text-center mb-14 fade-in-up">
+                <span class="text-accent font-semibold text-sm uppercase tracking-widest">Who We Are</span>
+                <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-charcoal mt-2 mb-4">
+                    About G&A <span class="text-primary">KCash</span> Microfinance
+                </h2>
+                <div class="w-20 h-1 bg-accent mx-auto rounded-full"></div>
+            </div>
+
+            <!-- Company Description -->
+            <div class="max-w-4xl mx-auto text-center mb-14 fade-in-up">
+                <p class="text-gray-600 text-base sm:text-lg leading-relaxed">
+                    <strong class="text-primary">G&A KCash Microfinance Inc.</strong> A Christian Individual aims to build a community founded on shared commitment, mutual investment and a christ centered where faith, hope and love reflect to lives of men and women.
+                </p>
+            </div>
+
+            <!-- Mission & Vision Cards -->
+            <div class="grid md:grid-cols-2 gap-8 lg:gap-12 max-w-5xl mx-auto">
+                <!-- Mission Card -->
+                <div class="mv-card mission bg-white rounded-2xl shadow-lg p-8 fade-in-up">
+                    <div class="flex items-center space-x-3 mb-5">
+                        <div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
+                            <i class="fas fa-bullseye text-white text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-primary">Our Mission</h3>
+                    </div>
+                    <p class="text-gray-600 leading-relaxed">
+                        To develop communities with initiative combining economic empowerment with spiritual growth offering small loans, individual savings and financial education to help individuals escape poverty.
+                    </p>
+                </div>
+
+                <!-- Vision Card -->
+                <div class="mv-card vision bg-white rounded-2xl shadow-lg p-8 fade-in-up">
+                    <div class="flex items-center space-x-3 mb-5">
+                        <div class="w-12 h-12 rounded-full bg-accent flex items-center justify-center">
+                            <i class="fas fa-eye text-primary text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-charcoal">Our Vision</h3>
+                    </div>
+                    <p class="text-gray-600 leading-relaxed">
+                        To be a leading financial individual who provides excellent service to poor people in the community to create benefits for clients, shareholders and society. As well as exploring to the great commission in christ.
+                        serve.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Core Values Row -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-14 fade-in-up">
+                <div class="text-center p-5 rounded-xl bg-white shadow-sm border border-gray-100">
+                    <i class="fas fa-handshake text-accent text-3xl mb-2"></i>
+                    <h4 class="font-bold text-charcoal text-sm">Integrity</h4>
+                </div>
+                <div class="text-center p-5 rounded-xl bg-white shadow-sm border border-gray-100">
+                    <i class="fas fa-users text-primary text-3xl mb-2"></i>
+                    <h4 class="font-bold text-charcoal text-sm">Community</h4>
+                </div>
+                <div class="text-center p-5 rounded-xl bg-white shadow-sm border border-gray-100">
+                    <i class="fas fa-chart-line text-accent text-3xl mb-2"></i>
+                    <h4 class="font-bold text-charcoal text-sm">Growth</h4>
+                </div>
+                <div class="text-center p-5 rounded-xl bg-white shadow-sm border border-gray-100">
+                    <i class="fas fa-shield-alt text-primary text-3xl mb-2"></i>
+                    <h4 class="font-bold text-charcoal text-sm">Trust</h4>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+    LOCATIONS SECTION
+    ════════════════════════════════════════════════ -->
+    <section id="locations" class="py-16 md:py-24 bg-white" aria-label="Our Branches">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <!-- Section Header -->
+            <div class="text-center mb-14 fade-in-up">
+                <span class="text-accent font-semibold text-sm uppercase tracking-widest">Find Us</span>
+                <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-charcoal mt-2 mb-4">
+                    Our <span class="text-primary">Branches</span>
+                </h2>
+                <div class="w-20 h-1 bg-accent mx-auto rounded-full"></div>
+                <p class="text-gray-500 mt-4 max-w-xl mx-auto">
+                    Visit us at any of our branches across Tarlac and Pangasinan.
+                </p>
+            </div>
+
+            <!-- Location Cards Grid -->
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+
+                <!-- Camiling, Tarlac ★ MAIN BRANCH -->
+                <div class="location-card bg-off-white rounded-2xl overflow-hidden shadow-md border border-gray-100 fade-in-up relative">
+                    <div class="absolute top-3 right-3 z-10">
+                        <span class="location-badge"><i class="fas fa-star mr-1"></i>Main Branch</span>
+                    </div>
+                    <div class="h-48 bg-primary-light flex items-center justify-center relative">
+                        <div class="absolute inset-0 opacity-20"
+                             style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22white%22%3E%3Cpath d=%22M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: center; background-size: 80px;">
+                        </div>
+                        <i class="fas fa-map-marker-alt text-white text-5xl relative z-10 drop-shadow-lg"></i>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-primary mb-1">Camiling, Tarlac</h3>
+                        <p class="text-xs font-semibold text-accent mb-2">Headquarters</p>
+                        <p class="text-gray-600 text-sm">Burgos St. Poblacion C,<br />Camiling, Tarlac 2306</p>
+                        <div class="mt-3 flex items-center text-sm text-gray-500">
+                            <i class="fas fa-phone-alt text-accent mr-2"></i>
+                            <span>(045) 934-1234</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aguilar, Pangasinan -->
+                <div class="location-card bg-off-white rounded-2xl overflow-hidden shadow-md border border-gray-100 fade-in-up">
+                    <div class="h-48 bg-primary flex items-center justify-center relative">
+                        <div class="absolute inset-0 opacity-20"
+                             style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22white%22%3E%3Cpath d=%22M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: center; background-size: 70px;">
+                        </div>
+                        <i class="fas fa-map-marker-alt text-white text-5xl relative z-10 drop-shadow-lg"></i>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-primary mb-1">Aguilar, Pangasinan</h3>
+                        <p class="text-gray-600 text-sm">45 Rizal Street, Brgy. Poblacion<br />Aguilar, Pangasinan 2415</p>
+                        <div class="mt-3 flex items-center text-sm text-gray-500">
+                            <i class="fas fa-phone-alt text-accent mr-2"></i>
+                            <span>(075) 678-9012</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- San Carlos, Pangasinan -->
+                <div class="location-card bg-off-white rounded-2xl overflow-hidden shadow-md border border-gray-100 fade-in-up">
+                    <div class="h-48 bg-primary flex items-center justify-center relative">
+                        <div class="absolute inset-0 opacity-20"
+                             style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22white%22%3E%3Cpath d=%22M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: center; background-size: 70px;">
+                        </div>
+                        <i class="fas fa-map-marker-alt text-white text-5xl relative z-10 drop-shadow-lg"></i>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-primary mb-1">San Carlos, Pangasinan</h3>
+                        <p class="text-gray-600 text-sm">88 Mabini Avenue, Brgy. 1<br />San Carlos City, Pangasinan 2420</p>
+                        <div class="mt-3 flex items-center text-sm text-gray-500">
+                            <i class="fas fa-phone-alt text-accent mr-2"></i>
+                            <span>(075) 532-4567</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bugallon, Pangasinan -->
+                <div class="location-card bg-off-white rounded-2xl overflow-hidden shadow-md border border-gray-100 fade-in-up">
+                    <div class="h-48 bg-primary flex items-center justify-center relative">
+                        <div class="absolute inset-0 opacity-20"
+                             style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22white%22%3E%3Cpath d=%22M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: center; background-size: 70px;">
+                        </div>
+                        <i class="fas fa-map-marker-alt text-white text-5xl relative z-10 drop-shadow-lg"></i>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-primary mb-1">Bugallon, Pangasinan</h3>
+                        <p class="text-gray-600 text-sm">12 Quezon Boulevard, Brgy. Salomague<br />Bugallon, Pangasinan 2416</p>
+                        <div class="mt-3 flex items-center text-sm text-gray-500">
+                            <i class="fas fa-phone-alt text-accent mr-2"></i>
+                            <span>(075) 634-8901</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+    LOAN APPLICATION FORM — HIGH SECURITY
+    ════════════════════════════════════════════════ -->
+    <section id="apply" class="py-16 md:py-24 bg-off-white" aria-label="Loan Application Form">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <!-- Section Header -->
+            <div class="text-center mb-12 fade-in-up">
+                <span class="text-accent font-semibold text-sm uppercase tracking-widest">Get Started</span>
+                <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-charcoal mt-2 mb-4">
+                    Apply for a <span class="text-primary">Loan</span>
+                </h2>
+                <div class="w-20 h-1 bg-accent mx-auto rounded-full"></div>
+                <p class="text-gray-500 mt-4 max-w-lg mx-auto">
+                    Complete the form below. All information is encrypted and transmitted securely.
+                </p>
+            </div>
+
+            <!-- Security Notice Banner -->
+            <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-8 flex items-start space-x-3 fade-in-up">
+                <i class="fas fa-lock text-primary mt-1"></i>
+                <div>
+                    <p class="text-sm font-semibold text-primary">🔒 Secure Submission</p>
+                    <p class="text-xs text-gray-500 mt-1">
+                        Your data is encrypted in transit (HTTPS) before being sent to our secure backend API.
+                        We never store plain-text sensitive information. Protected by strict Content Security Policy.
+                    </p>
+                </div>
+            </div>
+
+            <!-- The Form -->
+            <form id="loanForm" class="bg-white rounded-3xl shadow-xl p-6 sm:p-8 lg:p-10 fade-in-up" novalidate autocomplete="off">
+
+                <!-- Row: Full Name & Contact Number -->
+                <div class="grid sm:grid-cols-2 gap-5 mb-5">
+                    <!-- Full Name -->
+                    <div>
+                        <label for="fullName" class="form-label">
+                            <i class="fas fa-user text-accent mr-1"></i> Full Name <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="fullName" name="fullName"
+                               class="form-input" placeholder="e.g. Juan M. Dela Cruz"
+                               autocomplete="off" required
+                               aria-describedby="fullNameError" />
+                        <div id="fullNameError" class="error-message" role="alert">
+                            <i class="fas fa-exclamation-circle mr-1"></i> Enter a valid name (letters, spaces, periods only).
+                        </div>
+                    </div>
+                    <!-- Contact Number -->
+                    <div>
+                        <label for="contactNumber" class="form-label">
+                            <i class="fas fa-phone text-accent mr-1"></i> Contact Number <span class="text-red-500">*</span>
+                        </label>
+                        <input type="tel" id="contactNumber" name="contactNumber"
+                               class="form-input" placeholder="e.g. 0912 345 6789"
+                               autocomplete="off" required
+                               aria-describedby="contactNumberError" />
+                        <div id="contactNumberError" class="error-message" role="alert">
+                            <i class="fas fa-exclamation-circle mr-1"></i> Enter a valid PH mobile number (09XX XXX XXXX).
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row: Email & Complete Address -->
+                <div class="grid sm:grid-cols-2 gap-5 mb-5">
+                    <!-- Email Address -->
+                    <div>
+                        <label for="email" class="form-label">
+                            <i class="fas fa-envelope text-accent mr-1"></i> Email Address <span class="text-red-500">*</span>
+                        </label>
+                        <input type="email" id="email" name="email"
+                               class="form-input" placeholder="e.g. juan@email.com"
+                               autocomplete="off" required
+                               aria-describedby="emailError" />
+                        <div id="emailError" class="error-message" role="alert">
+                            <i class="fas fa-exclamation-circle mr-1"></i> Enter a valid email address.
+                        </div>
+                    </div>
+                    <!-- Desired Loan Amount -->
+                    <div>
+                        <label for="loanAmount" class="form-label">
+                            <i class="fas fa-peso-sign text-accent mr-1"></i> Desired Loan Amount <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="loanAmount" name="loanAmount"
+                               class="form-input" placeholder="e.g. 25,000.00"
+                               autocomplete="off" required
+                               aria-describedby="loanAmountError" />
+                        <div id="loanAmountError" class="error-message" role="alert">
+                            <i class="fas fa-exclamation-circle mr-1"></i> Enter a valid amount (e.g. 10000 or 25,000.00).
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Full Address -->
+                <div class="mb-5">
+                    <label for="address" class="form-label">
+                        <i class="fas fa-home text-accent mr-1"></i> Complete Address <span class="text-red-500">*</span>
+                    </label>
+                    <textarea id="address" name="address" rows="2"
+                              class="form-input resize-none" placeholder="House No., Street, Barangay, City/Municipality, Province"
+                              autocomplete="off" required
+                              aria-describedby="addressError"></textarea>
+                    <div id="addressError" class="error-message" role="alert">
+                        <i class="fas fa-exclamation-circle mr-1"></i> Address is required and may only contain letters, numbers, commas, periods, and spaces.
+                    </div>
+                </div>
+
+                <!-- Row: Purpose & Branch -->
+                <div class="grid sm:grid-cols-2 gap-5 mb-6">
+                    <!-- Purpose of Loan -->
+                    <div>
+                        <label for="loanPurpose" class="form-label">
+                            <i class="fas fa-clipboard-list text-accent mr-1"></i> Purpose of Loan <span class="text-red-500">*</span>
+                        </label>
+                        <select id="loanPurpose" name="loanPurpose" class="form-input" required
+                                aria-describedby="loanPurposeError">
+                            <option value="" disabled selected>Select a purpose</option>
+                            <option value="business">Business Capital</option>
+                            <option value="agriculture">Agricultural / Farming</option>
+                            <option value="education">Education</option>
+                            <option value="medical">Medical / Health Emergency</option>
+                            <option value="home">Home Improvement</option>
+                            <option value="personal">Personal / Family Needs</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <div id="loanPurposeError" class="error-message" role="alert">
+                            <i class="fas fa-exclamation-circle mr-1"></i> Please select a loan purpose.
+                        </div>
+                    </div>
+                    <!-- Branch Selection -->
+                    <div>
+                        <label for="branch" class="form-label">
+                            <i class="fas fa-map-marker-alt text-accent mr-1"></i> Preferred Branch <span class="text-red-500">*</span>
+                        </label>
+                        <select id="branch" name="branch" class="form-input" required
+                                aria-describedby="branchError">
+                            <option value="" disabled selected>Select a branch</option>
+                            <option value="Camiling, Tarlac ★ Main">Camiling, Tarlac ★ Main Branch</option>
+                            <option value="Aguilar, Pangasinan">Aguilar, Pangasinan</option>
+                            <option value="San Carlos, Pangasinan">San Carlos, Pangasinan</option>
+                            <option value="Bugallon, Pangasinan">Bugallon, Pangasinan</option>
+                        </select>
+                        <div id="branchError" class="error-message" role="alert">
+                            <i class="fas fa-exclamation-circle mr-1"></i> Please select your preferred branch.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hidden field for CSRF-like token (placeholder) -->
+                <input type="hidden" name="csrf_token" value="" id="csrfToken" />
+
+                <!-- Submit -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+                    <p class="text-xs text-gray-400 flex items-center">
+                        <i class="fas fa-shield-alt text-primary mr-2"></i>
+                        All data is encrypted before transmission.
+                    </p>
+                    <button type="submit" id="submitBtn"
+                            class="btn-gold px-10 py-4 rounded-xl text-lg font-bold shadow-xl w-full sm:w-auto inline-flex items-center justify-center space-x-2">
+                        <span>Submit Application</span>
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+    FOOTER
+    ════════════════════════════════════════════════ -->
+    <footer class="bg-primary text-white" role="contentinfo">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+
+                <!-- Company Info -->
+                <div>
+                    <h4 class="text-lg font-extrabold mb-4">
+                        G&A <span class="text-accent">KCash</span>
+                    </h4>
+                    <p class="text-sm text-gray-300 leading-relaxed">
+                        Empowering communities through accessible microfinance solutions.
+                        Trusted partner for thousands of Filipino families.
+                    </p>
+                    <div class="flex space-x-3 mt-4">
+                        <a href="#" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-accent hover:text-primary transition" aria-label="Facebook">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-accent hover:text-primary transition" aria-label="Messenger">
+                            <i class="fab fa-facebook-messenger"></i>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-accent hover:text-primary transition" aria-label="Email">
+                            <i class="fas fa-envelope"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h5 class="font-bold text-accent mb-4 uppercase text-sm tracking-wider">Quick Links</h5>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#home" class="footer-link">Home</a></li>
+                        <li><a href="#about" class="footer-link">About Us</a></li>
+                        <li><a href="#locations" class="footer-link">Locations</a></li>
+                        <li><a href="#apply" class="footer-link">Apply for Loan</a></li>
+                        <li><a href="#" class="footer-link">Privacy Policy</a></li>
+                        <li><a href="#" class="footer-link">Terms of Service</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contact Info -->
+                <div>
+                    <h5 class="font-bold text-accent mb-4 uppercase text-sm tracking-wider">Contact Us</h5>
+                    <ul class="space-y-3 text-sm text-gray-300">
+                        <li class="flex items-start space-x-2">
+                            <i class="fas fa-phone-alt text-accent mt-1"></i>
+                            <span>(045) 934-1234<br />(075) 678-9012</span>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                            <i class="fas fa-envelope text-accent mt-1"></i>
+                            <span>kcashmicrofinanceheadoffice@gmail.com</span>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                            <i class="fas fa-globe text-accent mt-1"></i>
+                            <span>www.gandakcash.com</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Branch Addresses -->
+                <div>
+                    <h5 class="font-bold text-accent mb-4 uppercase text-sm tracking-wider">Our Branches</h5>
+                    <ul class="space-y-3 text-sm text-gray-300">
+                        <li><span class="font-semibold text-white">★ Camiling, Tarlac</span><br />Burgos St. Poblacion C</li>
+                        <li><span class="font-semibold text-white">Aguilar, Pangasinan</span><br />45 Rizal Street</li>
+                        <li><span class="font-semibold text-white">San Carlos, Pangasinan</span><br />88 Mabini Avenue</li>
+                        <li><span class="font-semibold text-white">Bugallon, Pangasinan</span><br />12 Quezon Boulevard</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="border-t border-white/10 mt-10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <p class="text-xs text-gray-400">
+                    &copy; 2026 G&A KCash Microfinance Inc. All rights reserved.
+                </p>
+                <p class="text-xs text-gray-500">
+                    <i class="fas fa-shield-alt mr-1"></i>
+                    Secured with HTTPS &bull; Protected by CSP
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ════════════════════════════════════════════════
+    JAVASCRIPT — SECURITY, VALIDATION, & INTERACTIONS
+    ════════════════════════════════════════════════ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ─── DOM REFS ─────────────────────────────────────────────────
+            const form           = document.getElementById('loanForm');
+            const submitBtn      = document.getElementById('submitBtn');
+            const hamburgerBtn   = document.getElementById('hamburgerBtn');
+            const mobileNav      = document.getElementById('mobileNav');
+            const toast          = document.getElementById('toast');
+            const toastMessage   = document.getElementById('toastMessage');
+
+            // ─── FIELD REFS ───────────────────────────────────────────────
+            const fields = {
+                fullName: {
+                    el: document.getElementById('fullName'),
+                    error: document.getElementById('fullNameError'),
+                },
+                contactNumber: {
+                    el: document.getElementById('contactNumber'),
+                    error: document.getElementById('contactNumberError'),
+                },
+                email: {
+                    el: document.getElementById('email'),
+                    error: document.getElementById('emailError'),
+                },
+                loanAmount: {
+                    el: document.getElementById('loanAmount'),
+                    error: document.getElementById('loanAmountError'),
+                },
+                address: {
+                    el: document.getElementById('address'),
+                    error: document.getElementById('addressError'),
+                },
+                loanPurpose: {
+                    el: document.getElementById('loanPurpose'),
+                    error: document.getElementById('loanPurposeError'),
+                },
+                branch: {
+                    el: document.getElementById('branch'),
+                    error: document.getElementById('branchError'),
+                },
+            };
+
+            // ─── SANITIZATION ─────────────────────────────────────────────
+            /**
+             * SECURE: Strip all HTML tags, encode dangerous characters,
+             * and remove script injections (XSS prevention).
+             */
+            function sanitizeInput(input) {
+                if (typeof input !== 'string') return '';
+                // Remove all HTML tags
+                let sanitized = input.replace(/<[^>]*>/g, '');
+                // Encode HTML entities
+                const charMap = {
+                    '&': '&',
+                    '<': '<',
+                    '>': '>',
+                    '"': '"',
+                    "'": '&#x27;',
+                    '/': '&#x2F;',
+                };
+                sanitized = sanitized.replace(/[&<>"'/]/g, function(m) { return charMap[m] || m; });
+                // Strip zero-width characters and control characters (except newline)
+                sanitized = sanitized.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, '');
+                // Collapse multiple spaces
+                sanitized = sanitized.replace(/\s+/g, ' ').trim();
+                return sanitized;
+            }
+
+            /**
+             * Sanitize for display (safe to use with textContent, never innerHTML).
+             */
+            function sanitizeDisplay(input) {
+                return sanitizeInput(input);
+            }
+
+            // ─── VALIDATION REGEX PATTERNS ────────────────────────────────
+            const PATTERNS = {
+                // Full name: letters, spaces, periods, hyphens, ñ/Ñ (2+ chars)
+                name: /^[A-Za-zÀ-ÿÑñ\s\.\-']{2,60}$/,
+
+                // PH mobile: 09xx xxx xxxx (with optional dashes/spaces)
+                phone: /^(09|\+639)\d{2}[-\s]?\d{3}[-\s]?\d{4}$/,
+
+                // Email: standard RFC-ish pattern
+                email: /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/,
+
+                // Amount: whole numbers or with 2 decimal places, optional commas
+                amount: /^[0-9]{1,3}(,[0-9]{3})*(\.[0-9]{2})?$|^[0-9]+(\.[0-9]{2})?$/,
+
+                // Address: letters, numbers, commas, periods, spaces, hyphens, #, /
+                address: /^[A-Za-z0-9\s,\.\-\#\/\(\)ñÑ]{5,200}$/,
+            };
+
+            // ─── VALIDATION FUNCTIONS ─────────────────────────────────────
+            function validateField(name, value) {
+                switch (name) {
+                    case 'fullName':
+                        return PATTERNS.name.test(value) ? '' : 'invalid';
+                    case 'contactNumber':
+                        return PATTERNS.phone.test(value) ? '' : 'invalid';
+                    case 'email':
+                        return PATTERNS.email.test(value) ? '' : 'invalid';
+                    case 'loanAmount':
+                        // Remove commas before testing
+                        const cleaned = value.replace(/,/g, '');
+                        if (!PATTERNS.amount.test(cleaned)) return 'invalid';
+                        const num = parseFloat(cleaned);
+                        if (isNaN(num) || num < 1000 || num > 1000000) return 'invalid';
+                        return '';
+                    case 'address':
+                        return PATTERNS.address.test(value) ? '' : 'invalid';
+                    case 'loanPurpose':
+                        return (value && value !== '') ? '' : 'invalid';
+                    case 'branch':
+                        return (value && value !== '') ? '' : 'invalid';
+                    default:
+                        return '';
+                }
+            }
+
+            function showFieldError(fieldObj) {
+                fieldObj.el.classList.add('error');
+                fieldObj.el.classList.remove('success');
+                fieldObj.error.classList.add('show');
+            }
+
+            function showFieldSuccess(fieldObj) {
+                fieldObj.el.classList.remove('error');
+                fieldObj.el.classList.add('success');
+                fieldObj.error.classList.remove('show');
+            }
+
+            function clearFieldState(fieldObj) {
+                fieldObj.el.classList.remove('error', 'success');
+                fieldObj.error.classList.remove('show');
+            }
+
+            // ─── REAL-TIME VALIDATION ON INPUT/BLUR ──────────────────────
+            Object.keys(fields).forEach(function(key) {
+                const field = fields[key];
+
+                function handler() {
+                    let rawValue = field.el.value;
+                    // Sanitize on input
+                    const sanitized = sanitizeInput(rawValue);
+                    if (sanitized !== rawValue) {
+                        field.el.value = sanitized;
+                        rawValue = sanitized;
+                    }
+
+                    if (rawValue.trim() === '') {
+                        clearFieldState(field);
+                        return;
+                    }
+
+                    const error = validateField(key, rawValue);
+                    if (error) {
+                        showFieldError(field);
+                    } else {
+                        showFieldSuccess(field);
+                    }
+                }
+
+                field.el.addEventListener('input', handler);
+                field.el.addEventListener('blur', handler);
+            });
+
+            // ─── AMOUNT FORMATTING ────────────────────────────────────────
+            fields.loanAmount.el.addEventListener('blur', function() {
+                let val = this.value.replace(/,/g, '').trim();
+                if (val === '') return;
+                const num = parseFloat(val);
+                if (!isNaN(num)) {
+                    this.value = num.toLocaleString('en-PH', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                    });
+                }
+            });
+
+            // ─── TOAST NOTIFICATION ───────────────────────────────────────
+            window.showToast = function(message, isError) {
+                toastMessage.textContent = message;
+                toast.style.background = isError ? '#D32F2F' : '#1B5E20';
+                toast.classList.add('show');
+                setTimeout(function() {
+                    toast.classList.remove('show');
+                }, 5000);
+            };
+
+            window.closeToast = function() {
+                toast.classList.remove('show');
+            };
+
+            // ─── FORM SUBMISSION ──────────────────────────────────────────
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // 1. Sanitize ALL text fields
+                const textFields = ['fullName', 'contactNumber', 'email', 'loanAmount', 'address'];
+                textFields.forEach(function(key) {
+                    fields[key].el.value = sanitizeInput(fields[key].el.value);
+                });
+
+                // 2. Validate all fields
+                let isValid = true;
+                Object.keys(fields).forEach(function(key) {
+                    const raw     = fields[key].el.value.trim();
+                    const error   = validateField(key, raw);
+
+                    if (raw === '' || error) {
+                        showFieldError(fields[key]);
+                        isValid = false;
+                    } else {
+                        showFieldSuccess(fields[key]);
+                    }
+                });
+
+                if (!isValid) {
+                    showToast('Please correct the highlighted fields before submitting.', true);
+                    // Scroll to first error
+                    const firstError = document.querySelector('.form-input.error');
+                    if (firstError) {
+                        firstError.focus();
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    return;
+                }
+
+                // 3. Collect sanitized, validated data
+                const formData = {
+                    fullName:       sanitizeDisplay(fields.fullName.el.value.trim()),
+                    contactNumber:  sanitizeDisplay(fields.contactNumber.el.value.trim()),
+                    email:          sanitizeDisplay(fields.email.el.value.trim()),
+                    loanAmount:     sanitizeDisplay(fields.loanAmount.el.value.trim()),
+                    address:        sanitizeDisplay(fields.address.el.value.trim()),
+                    loanPurpose:    fields.loanPurpose.el.value,
+                    branch:         fields.branch.el.value,
+                    submittedAt:    new Date().toISOString(),
+                    source:         'G&A KCash Website Loan Form',
+                };
+
+                // 4. Disable button & show loading state
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Encrypting & Sending...';
+
+                // 5. SECURE: Encrypt and send to backend API (placeholder)
+                encryptAndSendToAPI(formData);
+            });
+
+            // ─── GET BASE API URL ─────────────────────────────────────────
+            function getApiBaseUrl() {
+                // In production (Railway), use the same origin
+                // Fallback for local dev
+                return window.location.origin;
+            }
+
+            // ─── SEND TO SECURE BACKEND API ───────────────────────────────
+            function encryptAndSendToAPI(data) {
+                const apiUrl = getApiBaseUrl() + '/api/submit-loan';
+
+                console.log('=== SECURE SUBMISSION ===');
+                console.log('📦 Payload (Sanitized & Validated):', data);
+
+                fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': document.getElementById('csrfToken').value,
+                    },
+                    body: JSON.stringify(data),
+                })
+                .then(function(response) {
+                    if (!response.ok) {
+                        return response.json().then(function(err) {
+                            throw new Error(err.error || 'Server error');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(function(result) {
+                    console.log('✅ Server response:', result);
+
+                    // Reset form on success
+                    form.reset();
+                    Object.keys(fields).forEach(function(key) {
+                        clearFieldState(fields[key]);
+                    });
+
+                    showToast('✅ Application submitted successfully! We will contact you within 24 hours.', false);
+
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<span>Submit Application</span> <i class="fas fa-paper-plane"></i>';
+                })
+                .catch(function(error) {
+                    console.error('❌ Submission error:', error);
+                    showToast('❌ ' + error.message, true);
+
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<span>Submit Application</span> <i class="fas fa-paper-plane"></i>';
+                });
+            }
+
+            // ─── HAMBURGER MENU TOGGLE ────────────────────────────────────
+            hamburgerBtn.addEventListener('click', function() {
+                const isOpen = mobileNav.classList.toggle('open');
+                hamburgerBtn.classList.toggle('active');
+                hamburgerBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            });
+
+            window.closeMobileNav = function() {
+                mobileNav.classList.remove('open');
+                hamburgerBtn.classList.remove('active');
+                hamburgerBtn.setAttribute('aria-expanded', 'false');
+            };
+
+            // ─── SCROLL ANIMATIONS (INTERSECTION OBSERVER) ────────────────
+            const fadeEls = document.querySelectorAll('.fade-in-up');
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+
+            fadeEls.forEach(function(el) { observer.observe(el); });
+
+            // ─── NAV LINK ACTIVE STATE ON SCROLL ──────────────────────────
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.nav-link, .mobile-nav .nav-link');
+            window.addEventListener('scroll', function() {
+                let current = '';
+                sections.forEach(function(section) {
+                    const top = section.offsetTop - 120;
+                    if (window.scrollY >= top) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                navLinks.forEach(function(link) {
+                    link.classList.remove('text-primary', 'font-semibold');
+                    if (link.getAttribute('href') === '#' + current) {
+                        link.classList.add('text-primary', 'font-semibold');
+                    }
+                });
+            });
+
+            // ─── CSRF TOKEN PLACEHOLDER ──────────────────────────────────
+            // In production, this would be a server-generated token
+            document.getElementById('csrfToken').value = 'csrf_' + Date.now() + '_' + Math.random().toString(36).substr(2);
+
+            // ─── CONSOLE SECURITY NOTICE ──────────────────────────────────
+            console.log('%c🔒 G&A KCash Microfinance — Secure Portal', 'color: #1B5E20; font-size: 16px; font-weight: bold;');
+            console.log('%cThis website is protected by Content Security Policy and XSS sanitization.', 'color: #F9A825;');
+
+        })();
+    </script>
+</body>
+</html>

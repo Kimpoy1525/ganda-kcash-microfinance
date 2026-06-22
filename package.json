@@ -1,0 +1,22 @@
+{
+  "name": "ganda-kcash-microfinance",
+  "version": "1.0.0",
+  "description": "G&A KCash Microfinance Inc. — Secure Loan Application Portal",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["microfinance", "loan", "application", "G&A KCash"],
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "csv-stringify": "^6.4.4",
+    "uuid": "^9.0.0",
+    "xss": "^1.0.15"
+  }
+}
