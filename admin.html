@@ -85,6 +85,17 @@
         const API = window.location.origin;
         let authToken = '';
 
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            const savedToken = localStorage.getItem('adminAuthToken');
+            if (savedToken) {
+                authToken = savedToken;
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('dashboardScreen').classList.remove('hidden');
+                loadData();
+            }
+        });
+
         async function login() {
             const pw = document.getElementById('passwordInput').value;
             const err = document.getElementById('loginError');
@@ -101,6 +112,7 @@
                     return;
                 }
                 authToken = data.token;
+                localStorage.setItem('adminAuthToken', authToken);
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('dashboardScreen').classList.remove('hidden');
                 loadData();
@@ -191,6 +203,7 @@
 
         function logout() {
             authToken = '';
+            localStorage.removeItem('adminAuthToken');
             document.getElementById('loginScreen').classList.remove('hidden');
             document.getElementById('dashboardScreen').classList.add('hidden');
             document.getElementById('passwordInput').value = '';
