@@ -1326,12 +1326,29 @@
                 });
             });
 
-            // ─── CSRF TOKEN ──────────────────────────────────────────────
-            document.getElementById('csrfToken').value = 'csrf_' + Date.now() + '_' + Math.random().toString(36).substr(2);
+            // ─── CSRF TOKEN (Server-Generated) ───────────────────────────
+            (function() {
+                const apiUrl = getApiBaseUrl() + '/api/csrf-token';
+                fetch(apiUrl)
+                    .then(function(response) {
+                        if (!response.ok) throw new Error('Failed to fetch CSRF token');
+                        return response.json();
+                    })
+                    .then(function(data) {
+                        if (data.token) {
+                            document.getElementById('csrfToken').value = data.token;
+                            console.log('[SECURITY] CSRF token initialized from server');
+                        }
+                    })
+                    .catch(function(err) {
+                        console.warn('[SECURITY] CSRF token initialization failed:', err.message);
+                        console.log('Please refresh the page if form submission fails.');
+                    });
+            })();
 
             // ─── CONSOLE SECURITY NOTICE ──────────────────────────────────
             console.log('%c🔒 G&A KCash Microfinance — Secure Portal', 'color: #1B5E20; font-size: 16px; font-weight: bold;');
-            console.log('%cThis website is protected by Content Security Policy and XSS sanitization.', 'color: #F9A825;');
+            console.log('%cThis website is protected by Content Security Policy, CSRF tokens, and XSS sanitization.', 'color: #F9A825;');
 
         })();
     </script>

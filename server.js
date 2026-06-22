@@ -184,14 +184,39 @@ function logSubmission(data, status) {
 // ─── Serve static frontend ───────────────────────────────────
 app.use(express.static(path.join(__dirname, '.')));
 
+// ─── API: Generate CSRF token ───────────────────────────────
+app.get('/api/csrf-token', (req, res) => {
+    try {
+        const token = 'csrf_' + crypto.randomBytes(32).toString('hex');
+        csrfTokens.add(token);
+        
+        // Token expires after 1 hour
+        setTimeout(() => {
+            csrfTokens.delete(token);
+        }, 60 * 60 * 1000);
+        
+        res.json({
+            token: token,
+            expiresIn: 3600,
+        });
+    } catch (err) {
+        console.error('[CSRF] Token generation error:', err.message);
+        res.status(500).json({ error: 'Failed to generate CSRF token.' });
+    }
+});
+
 // ─── API: Submit loan application ────────────────────────────
 app.post('/api/submit-loan', (req, res) => {
     try {
         // Validate CSRF token
         const csrfToken = req.headers['x-csrf-token'];
-        if (!csrfToken || !csrfToken.startsWith('csrf_')) {
-            return res.status(403).json({ error: 'Invalid CSRF token.' });
+        if (!csrfToken || !csrfTokens.has(csrfToken)) {
+            console.warn('[SECURITY] CSRF validation failed. Token:', csrfToken ? csrfToken.substring(0, 20) + '...' : 'missing');
+            return res.status(403).json({ error: 'Invalid or expired CSRF token. Please refresh the page and try again.' });
         }
+        
+        // Delete the token after use (one-time use)
+        csrfTokens.delete(csrfToken);
 
         // Validate & sanitize input
         const validation = validateLoanData(req.body);
