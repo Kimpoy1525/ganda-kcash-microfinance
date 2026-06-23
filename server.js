@@ -1,10 +1,3 @@
-Here is your fully updated and secure `server.js` code.
-
-I have removed the dangerous line that exposed your backend files, moved the `public` folder setup to the correct secure location below your body parsers, and made sure there are no duplicate `path` declarations.
-
-You can copy and paste this directly over your current `server.js` file:
-
-```javascript
 // ═══════════════════════════════════════════════════════════════
 //  G&A KCash Microfinance Inc. — Secure Backend Server
 //  Features: Helmet security, rate limiting, XSS sanitization,
@@ -374,5 +367,3 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log('[SECURITY] CSRF protection active');
     console.log('[SECURITY] Payload size limit: 10KB');
 });
-
-```
