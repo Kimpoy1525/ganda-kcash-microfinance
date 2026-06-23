@@ -6,6 +6,19 @@
     <title>G&A KCash — Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1f7c26',
+                        'primary-light': '#28a745',
+                        accent: '#F9A825'
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         body { font-family: 'Inter', sans-serif; background: #F8F9FA; }
         .btn-gold {
@@ -57,6 +70,13 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- Tabs -->
+                <div class="flex gap-6 border-b border-gray-200 mb-6">
+                    <button id="tab-pending" onclick="switchTab('PENDING')" class="pb-3 border-b-2 border-primary text-primary font-bold text-sm transition-all">Pending Applications</button>
+                    <button id="tab-done" onclick="switchTab('DONE')" class="pb-3 border-b-2 border-transparent text-gray-400 hover:text-gray-600 font-medium text-sm transition-all">Done / Completed</button>
+                </div>
+
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left" id="submissionsTable">
                         <thead>
@@ -70,10 +90,11 @@
                                 <th class="py-3 pr-4">Purpose</th>
                                 <th class="py-3 pr-4">Branch</th>
                                 <th class="py-3 pr-4">Status</th>
+                                <th class="py-3 pr-4">Action</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody">
-                            <tr><td colspan="9" class="text-center py-8 text-gray-400">No submissions yet.</td></tr>
+                            <tr><td colspan="10" class="text-center py-8 text-gray-400">No submissions yet.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -84,6 +105,8 @@
     <script>
         const API = 'https://ganda-kcash-microfinance.up.railway.app';
         let authToken = '';
+        let allSubmissions = [];
+        let currentTab = 'PENDING';
 
         // Initialize on page load
         window.addEventListener('DOMContentLoaded', function() {
@@ -122,6 +145,17 @@
             }
         }
 
+        function switchTab(tab) {
+            currentTab = tab;
+            document.getElementById('tab-pending').className = tab === 'PENDING' 
+                ? 'pb-3 border-b-2 border-primary text-primary font-bold text-sm transition-all' 
+                : 'pb-3 border-b-2 border-transparent text-gray-400 hover:text-gray-600 font-medium text-sm transition-all';
+            document.getElementById('tab-done').className = tab === 'DONE' 
+                ? 'pb-3 border-b-2 border-primary text-primary font-bold text-sm transition-all' 
+                : 'pb-3 border-b-2 border-transparent text-gray-400 hover:text-gray-600 font-medium text-sm transition-all';
+            renderTable();
+        }
+
         async function loadData() {
             try {
                 const res = await fetch(API + '/api/admin/stats', {
@@ -138,33 +172,73 @@
                 });
                 const csvText = await res.text();
                 const rows = csvText.trim().split('\n');
-                const tbody = document.getElementById('tableBody');
-                if (rows.length <= 1) {
-                    tbody.innerHTML = '<tr><td colspan="9" class="text-center py-8 text-gray-400">No submissions yet.</td></tr>';
-                    return;
+                
+                allSubmissions = [];
+                if (rows.length > 1) {
+                    for (let i = rows.length - 1; i >= 1; i--) {
+                        const cols = parseCsvRow(rows[i]);
+                        if (cols.length >= 9) allSubmissions.push(cols);
+                    }
                 }
-                let html = '';
-                for (let i = rows.length - 1; i >= 1; i--) {
-                    const cols = parseCsvRow(rows[i]);
-                    if (cols.length < 9) continue;
-                    const statusClass = cols[9] === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                                        cols[9] === 'APPROVED' ? 'bg-green-100 text-green-800' :
-                                        'bg-gray-100 text-gray-800';
-                    html += '<tr class="border-b border-gray-50 hover:bg-gray-50">';
-                    html += '<td class="py-3 pr-4 font-mono text-xs">' + esc(cols[0]) + '</td>';
-                    html += '<td class="py-3 pr-4 text-xs">' + esc(new Date(cols[1]).toLocaleString()) + '</td>';
-                    html += '<td class="py-3 pr-4 font-medium">' + esc(cols[2]) + '</td>';
-                    html += '<td class="py-3 pr-4">' + esc(cols[3]) + '</td>';
-                    html += '<td class="py-3 pr-4 text-xs">' + esc(cols[4]) + '</td>';
-                    html += '<td class="py-3 pr-4 font-medium">₱' + esc(cols[5]) + '</td>';
-                    html += '<td class="py-3 pr-4 capitalize">' + esc(cols[7]) + '</td>';
-                    html += '<td class="py-3 pr-4 text-xs">' + esc(cols[8]) + '</td>';
-                    html += '<td class="py-3 pr-4"><span class="px-2 py-1 rounded-full text-xs font-semibold ' + statusClass + '">' + esc(cols[9]) + '</span></td>';
-                    html += '</tr>';
-                }
-                tbody.innerHTML = html;
+                renderTable();
             } catch (e) {
                 console.error('Load error:', e);
+            }
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            const filtered = allSubmissions.filter(cols => cols[9] === currentTab);
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" class="text-center py-8 text-gray-400">No submissions in this tab.</td></tr>';
+                return;
+            }
+
+            let html = '';
+            for (const cols of filtered) {
+                const statusClass = cols[9] === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800';
+                
+                html += '<tr class="border-b border-gray-50 hover:bg-gray-50">';
+                html += '<td class="py-3 pr-4 font-mono text-xs">' + esc(cols[0]) + '</td>';
+                html += '<td class="py-3 pr-4 text-xs">' + esc(new Date(cols[1]).toLocaleString()) + '</td>';
+                html += '<td class="py-3 pr-4 font-medium">' + esc(cols[2]) + '</td>';
+                html += '<td class="py-3 pr-4">' + esc(cols[3]) + '</td>';
+                html += '<td class="py-3 pr-4 text-xs">' + esc(cols[4]) + '</td>';
+                html += '<td class="py-3 pr-4 font-medium">₱' + esc(cols[5]) + '</td>';
+                html += '<td class="py-3 pr-4 capitalize">' + esc(cols[7]) + '</td>';
+                html += '<td class="py-3 pr-4 text-xs">' + esc(cols[8]) + '</td>';
+                html += '<td class="py-3 pr-4"><span class="px-2 py-1 rounded-full text-xs font-semibold ' + statusClass + '">' + esc(cols[9]) + '</span></td>';
+                
+                // Action Button Logic
+                if (cols[9] === 'PENDING') {
+                    html += '<td class="py-3 pr-4"><button onclick="markAsDone(\'' + cols[0] + '\')" class="bg-primary hover:bg-primary-light text-white px-3 py-1 rounded text-xs font-bold transition">Mark Done</button></td>';
+                } else {
+                    html += '<td class="py-3 pr-4 text-gray-400 text-xs italic">Completed</td>';
+                }
+
+                html += '</tr>';
+            }
+            tbody.innerHTML = html;
+        }
+
+        async function markAsDone(id) {
+            if (!confirm('Move this application to the Done tab?')) return;
+            
+            try {
+                const res = await fetch(API + '/api/admin/update-status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+                    body: JSON.stringify({ id: id, status: 'DONE' })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    loadData(); // Re-fetch the data to update the table immediately
+                } else {
+                    alert('Error updating status. Make sure your server.js is updated!');
+                }
+            } catch (e) {
+                alert('Connection error. Is the backend running?');
             }
         }
 

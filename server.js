@@ -327,7 +327,46 @@ app.get('/api/admin/stats', (req, res) => {
         res.status(500).json({ error: 'Failed to read stats.' });
     }
 });
+// ─── Admin: Update Application Status ────────────────────────
+app.post('/api/admin/update-status', express.json(), (req, res) => {
+    const authToken = req.headers['authorization'];
+    if (!authToken || !authToken.startsWith('Bearer admin_')) {
+        return res.status(401).json({ error: 'Unauthorized.' });
+    }
 
+    const { id, status } = req.body;
+    if (!id || !status) return res.status(400).json({ error: 'Missing data.' });
+
+    try {
+        const csvData = fs.readFileSync(CSV_PATH, 'utf-8');
+        const rows = csvData.trim().split('\n');
+        let updated = false;
+        let newCsv = rows[0] + '\n'; // Keep the header row
+
+        // Rebuild the CSV with the updated status
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            if (row.startsWith(id + ',') || row.startsWith('"' + id + '"')) {
+                // Replace PENDING with DONE
+                const updatedRow = row.replace(/PENDING/, status);
+                newCsv += updatedRow + '\n';
+                updated = true;
+            } else {
+                newCsv += row + '\n';
+            }
+        }
+
+        if (updated) {
+            fs.writeFileSync(CSV_PATH, newCsv, 'utf-8');
+            res.json({ success: true });
+        } else {
+            res.status(404).json({ error: 'Client record not found.' });
+        }
+    } catch (err) {
+        console.error('[ADMIN] Update error:', err.message);
+        res.status(500).json({ error: 'Failed to update record.' });
+    }
+});
 // ─── API: Health check ───────────────────────────────────────
 app.get('/api/health', (req, res) => {
     res.json({
