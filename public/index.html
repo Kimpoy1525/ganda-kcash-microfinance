@@ -413,9 +413,10 @@
     <section id="home" class="relative min-h-screen flex items-center justify-center overflow-hidden" aria-label="Hero">
 
         <!-- Carousel Slides -->
-        <div class="carousel-slide active" style="background-image: url('P3.jpg');"></div>
-        <div class="carousel-slide" style="background-image: url('Photo.jpg');"></div>
-        <div class="carousel-slide" style="background-image: url('p2.jpg');"></div>
+        <div class="carousel-slide active" style="background-image: url('p4.jpg');"></div>
+        <div class="carousel-slide" style="background-image: url('p5.jpg');"></div>
+        <div class="carousel-slide" style="background-image: url('p6.jpg');"></div>
+        <div class="carousel-slide" style="background-image: url('p7.jpg');"></div>
 
         <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/60"></div>
 
@@ -454,6 +455,7 @@
             <button class="carousel-dot active" data-slide="0" aria-label="Slide 1"></button>
             <button class="carousel-dot" data-slide="1" aria-label="Slide 2"></button>
             <button class="carousel-dot" data-slide="2" aria-label="Slide 3"></button>
+            <button class="carousel-dot" data-slide="3" aria-label="Slide 4"></button>
         </div>
 
         <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce z-20">
@@ -621,8 +623,10 @@
                     </div>
                 </a>
 
-                <!-- Aguilar -->
-                <div class="location-card bg-blue-50 rounded-2xl overflow-hidden shadow-md border border-blue-200 fade-in-up group">
+                <!-- Aguilar — Clickable Google Maps Link -->
+                <a href="https://www.google.com/maps/place/Aguilar,+Pangasinan/@15.8946383,120.2143429,15z" 
+                   target="_blank" rel="noopener noreferrer"
+                   class="location-card bg-blue-50 rounded-2xl overflow-hidden shadow-md border border-blue-200 fade-in-up group block hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                     <div class="h-48 bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center relative overflow-hidden">
                         <div class="absolute inset-0 opacity-10">
                             <i class="fas fa-map-marker-alt text-white text-8xl absolute -top-5 -right-5"></i>
@@ -632,11 +636,11 @@
                     <div class="p-6">
                         <h3 class="text-xl font-bold text-blue-800 mb-1">Aguilar, Pangasinan</h3>
                         <p class="text-blue-700 text-sm font-medium">  </p>
-                        <div class="mt-4 pt-4 border-t border-blue-200 flex items-center text-sm">
-                    
+                        <div class="mt-4 pt-4 border-t border-blue-200 flex items-center justify-between text-sm">
+                            <span class="text-blue-600 text-xs font-semibold flex items-center gap-1"><i class="fas fa-map-marked-alt"></i> View Map</span>
                         </div>
                     </div>
-                </div>
+                </a>
 
                 <!-- San Carlos -->
                 <div class="location-card bg-purple-50 rounded-2xl overflow-hidden shadow-md border border-purple-200 fade-in-up group">
