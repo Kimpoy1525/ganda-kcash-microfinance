@@ -1,408 +1,157 @@
-// ═══════════════════════════════════════════════════════════════
-//  G&A KCash Microfinance Inc. — Secure Backend Server
-//  Features: Helmet security, rate limiting, XSS sanitization,
-//  CSRF protection, CSV spreadsheet storage, admin dashboard
-// ═══════════════════════════════════════════════════════════════
-
 'use strict';
 
-const express       = require('express');
-const helmet        = require('helmet');
-const rateLimit     = require('express-rate-limit');
-const cors          = require('cors');
-const path          = require('path');
-const fs            = require('fs');
+require('dotenv').config();
+const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
+const express = require('express');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const { stringify } = require('csv-stringify/sync');
 const { v4: uuidv4 } = require('uuid');
-const xss           = require('xss');
-const crypto        = require('crypto');
 
-// ─── Load environment variables ──────────────────────────────
-require('dotenv').config();
+const app = express();
+const PORT = Number(process.env.PORT) || 3000;
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
+const SESSION_SECRET = process.env.SESSION_SECRET || (IS_PRODUCTION ? '' : crypto.randomBytes(32).toString('hex'));
+const DATA_DIR = path.join(__dirname, 'data');
+const CSV_PATH = path.join(DATA_DIR, 'loan-applications.csv');
+const CSV_HEADERS = ['ID', 'Timestamp', 'Full Name', 'Contact Number', 'Email', 'Loan Amount', 'Address', 'Loan Purpose', 'Branch', 'Status', 'Source'];
+const BRANCHES = ['Camiling - Main Branch', 'Bayambang Branch', 'Malasiqui Branch', 'Moncada Branch'];
+const PURPOSES = ['business', 'agriculture', 'education', 'medical', 'home', 'personal', 'other'];
+const STATUSES = ['PENDING', 'APPROVED', 'DECLINED'];
+const csrfTokens = new Map();
 
-const app           = express();
-const PORT          = process.env.PORT || 3000;
-const ADMIN_PASS    = process.env.ADMIN_PASSWORD || 'change_me_in_production';
-const SESSION_SECRET = process.env.SESSION_SECRET || uuidv4();
-
-// ─── File paths ───────────────────────────────────────────────
-const DATA_DIR      = path.join(__dirname, 'data');
-const CSV_PATH      = path.join(DATA_DIR, 'loan-applications.csv');
-const LOG_PATH      = path.join(DATA_DIR, 'submissions.log');
-
-// Ensure data directory exists
-if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-    console.log('[INIT] Created data directory:', DATA_DIR);
+if (IS_PRODUCTION && (!ADMIN_PASSWORD || ADMIN_PASSWORD.length < 12 || !SESSION_SECRET || SESSION_SECRET.length < 32)) {
+  throw new Error('Production requires ADMIN_PASSWORD (12+ characters) and SESSION_SECRET (32+ characters).');
 }
+fs.mkdirSync(DATA_DIR, { recursive: true });
+if (!fs.existsSync(CSV_PATH)) fs.writeFileSync(CSV_PATH, stringify([CSV_HEADERS]), { encoding: 'utf8', mode: 0o600 });
 
-// ─── Initialize CSV with headers if not exists ───────────────
-function initCsv() {
-    if (!fs.existsSync(CSV_PATH)) {
-        const headers = [
-            ['ID', 'Timestamp', 'Full Name', 'Contact Number', 'Email',
-             'Loan Amount', 'Address', 'Loan Purpose', 'Branch', 'Status', 'Source']
-        ];
-        const csvContent = stringify(headers);
-        fs.writeFileSync(CSV_PATH, csvContent, 'utf-8');
-        console.log('[INIT] Created CSV file with headers');
-    }
-}
-initCsv();
-
-// ─── Security Middleware ──────────────────────────────────────
-
-// 1. Helmet — sets secure HTTP headers (CSP, X-Frame-Options, etc.)
+app.disable('x-powered-by');
+if (IS_PRODUCTION) app.set('trust proxy', 1);
 app.use(helmet({
-    contentSecurityPolicy: false, // We handle CSP via meta tag in HTML
-    crossOriginEmbedderPolicy: false,
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"], imgSrc: ["'self'", 'data:'], styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"], connectSrc: ["'self'"], objectSrc: ["'none'"],
+      baseUri: ["'self'"], frameAncestors: ["'none'"], formAction: ["'self'"], upgradeInsecureRequests: IS_PRODUCTION ? [] : null,
+    },
+  },
+  crossOriginEmbedderPolicy: false,
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
 }));
+app.use(express.json({ limit: '12kb', strict: true }));
+app.use(express.urlencoded({ extended: false, limit: '12kb' }));
+app.use(express.static(path.join(__dirname, 'public'), { dotfiles: 'deny', etag: true, maxAge: IS_PRODUCTION ? '1h' : 0 }));
 
-// 2. CORS — restrict in production
-app.use(cors({
-    origin: process.env.NODE_ENV === 'production'
-        ? false  // same-origin only
-        : '*',
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type', 'X-CSRF-Token'],
-}));
+const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 120, standardHeaders: 'draft-7', legacyHeaders: false, message: { error: 'Too many requests. Please try again later.' } });
+const submitLimiter = rateLimit({ windowMs: 60 * 60 * 1000, limit: 8, standardHeaders: 'draft-7', legacyHeaders: false, message: { error: 'Too many applications from this connection. Please try again later.' } });
+const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 5, skipSuccessfulRequests: true, standardHeaders: 'draft-7', legacyHeaders: false, message: { error: 'Too many login attempts. Please wait 15 minutes.' } });
+app.use('/api', apiLimiter);
 
-// 3. Body parser with size limit (prevents large payload attacks)
-app.use(express.json({ limit: '10kb' }));
-app.use(express.urlencoded({ extended: false, limit: '10kb' }));
+function clean(value, max) {
+  return typeof value === 'string' ? value.normalize('NFKC').replace(/[\u0000-\u001F\u007F-\u009F]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max) : '';
+}
+function safeCsv(value) {
+  const text = String(value);
+  return /^[=+\-@\t\r]/.test(text) ? `'${text}` : text;
+}
+function validateLoan(body = {}) {
+  const data = {
+    fullName: clean(body.fullName, 80), contactNumber: clean(body.contactNumber, 20), email: clean(body.email, 120).toLowerCase(),
+    loanAmount: clean(body.loanAmount, 20).replace(/,/g, ''), address: clean(body.address, 220),
+    loanPurpose: clean(body.loanPurpose, 30).toLowerCase(), branch: clean(body.branch, 80),
+  };
+  const errors = [];
+  if (!/^[\p{L}][\p{L}\p{M} .'-]{1,79}$/u.test(data.fullName)) errors.push('Enter a valid full name.');
+  if (!/^(?:09\d{9}|\+639\d{9})$/.test(data.contactNumber.replace(/[ -]/g, ''))) errors.push('Enter a valid Philippine mobile number.');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(data.email)) errors.push('Enter a valid email address.');
+  const amount = Number(data.loanAmount);
+  if (!Number.isFinite(amount) || amount < 1000 || amount > 1000000 || !/^\d+(?:\.\d{1,2})?$/.test(data.loanAmount)) errors.push('Loan amount must be between ₱1,000 and ₱1,000,000.');
+  if (data.address.length < 8) errors.push('Enter a complete address.');
+  if (!PURPOSES.includes(data.loanPurpose)) errors.push('Select a valid loan purpose.');
+  if (!BRANCHES.includes(data.branch)) errors.push('Select a valid branch.');
+  return { data, errors };
+}
+function parseCookies(header = '') {
+  return Object.fromEntries(header.split(';').map(v => v.trim().split(/=(.*)/s)).filter(v => v[0]).map(([k, v]) => [k, decodeURIComponent(v || '')]));
+}
+function sign(payload) { return `${payload}.${crypto.createHmac('sha256', SESSION_SECRET).update(payload).digest('base64url')}`; }
+function validSession(req) {
+  const token = parseCookies(req.headers.cookie).kcash_admin;
+  if (!token) return false;
+  const split = token.lastIndexOf('.');
+  if (split < 1) return false;
+  const payload = token.slice(0, split), signature = token.slice(split + 1), expected = sign(payload).slice(split + 1);
+  if (signature.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))) return false;
+  const [expires, nonce] = payload.split('.');
+  return Boolean(nonce) && Number(expires) > Date.now();
+}
+function requireAdmin(req, res, next) { return validSession(req) ? next() : res.status(401).json({ error: 'Your admin session has expired. Please sign in again.' }); }
+function sameOrigin(req) {
+  const origin = req.get('origin');
+  if (!origin) return true;
+  try { return new URL(origin).host === req.get('host'); } catch { return false; }
+}
+function parseCsv(text) {
+  const rows = []; let row = [], field = '', quoted = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '"' && quoted && text[i + 1] === '"') { field += '"'; i++; }
+    else if (c === '"') quoted = !quoted;
+    else if (c === ',' && !quoted) { row.push(field); field = ''; }
+    else if ((c === '\n' || c === '\r') && !quoted) { if (c === '\r' && text[i + 1] === '\n') i++; row.push(field); if (row.some(Boolean)) rows.push(row); row = []; field = ''; }
+    else field += c;
+  }
+  if (field || row.length) { row.push(field); rows.push(row); }
+  return rows;
+}
 
-// Serve static frontend files securely from the "public" folder
-app.use(express.static(path.join(__dirname, 'public')));
+setInterval(() => { const now = Date.now(); for (const [token, expiry] of csrfTokens) if (expiry < now) csrfTokens.delete(token); }, 10 * 60 * 1000).unref();
 
-// 4. Rate limiting — prevent brute force / DDoS
-const apiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,   // 15 minutes
-    max: 30,                      // max 30 requests per window per IP
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: { error: 'Too many requests. Please try again later.' },
-});
-app.use('/api/', apiLimiter);
-
-// Stricter rate limit for admin login
-const loginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 10,
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: { error: 'Too many login attempts. Please try again later.' },
-});
-
-// 5. CSRF token validation
-const csrfTokens = new Set();
-
-// Clean old tokens every hour
-setInterval(() => { csrfTokens.clear(); }, 60 * 60 * 1000);
-
-// ─── API: Generate CSRF token ───────────────────────────────
 app.get('/api/csrf-token', (req, res) => {
-    try {
-        const token = 'csrf_' + crypto.randomBytes(32).toString('hex');
-        csrfTokens.add(token);
-        
-        // Token expires after 1 hour
-        setTimeout(() => {
-            csrfTokens.delete(token);
-        }, 60 * 60 * 1000);
-        
-        res.json({
-            token: token,
-            expiresIn: 3600,
-        });
-    } catch (err) {
-        console.error('[CSRF] Token generation error:', err.message);
-        res.status(500).json({ error: 'Failed to generate CSRF token.' });
-    }
+  const token = crypto.randomBytes(32).toString('base64url'); csrfTokens.set(token, Date.now() + 30 * 60 * 1000);
+  res.set('Cache-Control', 'no-store').json({ token, expiresIn: 1800 });
 });
-
-// ─── Input validation & sanitization ─────────────────────────
-
-const PATTERNS = {
-    name:        /^[A-Za-zÀ-ÿÑñ\s\.\-']{2,60}$/,
-    phone:       /^(09|\+639)\d{2}[-\s]?\d{3}[-\s]?\d{4}$/,
-    email:       /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/,
-    amount:      /^[0-9]{1,3}(,[0-9]{3})*(\.[0-9]{2})?$|^[0-9]+(\.[0-9]{2})?$/,
-    address:     /^[A-Za-z0-9\s,\.\-\#\/\(\)ñÑ]{5,200}$/,
-    loanPurpose: /^(business|agriculture|education|medical|home|personal|other)$/,
-    branch:      /^[A-Za-z0-9\s,\.\-\★\(\)]+$/,
-};
-
-const VALID_PURPOSES = ['business', 'agriculture', 'education', 'medical', 'home', 'personal', 'other'];
-
-function sanitizeText(str) {
-    if (typeof str !== 'string') return '';
-    // Use xss library for server-side sanitization
-    let clean = xss(str, {
-        whiteList: {},        // No tags allowed
-        stripIgnoreTag: true,
-        stripIgnoreTagBody: ['script', 'style', 'iframe', 'object', 'embed'],
-    });
-    // Remove control characters
-    clean = clean.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, '');
-    // Collapse whitespace
-    clean = clean.replace(/\s+/g, ' ').trim();
-    return clean;
-}
-
-function validateLoanData(body) {
-    const errors = [];
-
-    const fullName      = sanitizeText(body.fullName || '');
-    const contactNumber = sanitizeText(body.contactNumber || '');
-    const email         = sanitizeText(body.email || '');
-    const loanAmount    = sanitizeText(body.loanAmount || '');
-    const address       = sanitizeText(body.address || '');
-    const loanPurpose   = body.loanPurpose || '';
-    const branch        = sanitizeText(body.branch || '');
-
-    if (!PATTERNS.name.test(fullName)) {
-        errors.push('Invalid full name format.');
-    }
-    if (!PATTERNS.phone.test(contactNumber)) {
-        errors.push('Invalid contact number format (PH mobile: 09XXXXXXXXX).');
-    }
-    if (!PATTERNS.email.test(email)) {
-        errors.push('Invalid email address.');
-    }
-    const amountCleaned = loanAmount.replace(/,/g, '');
-    if (!PATTERNS.amount.test(amountCleaned)) {
-        errors.push('Invalid loan amount format.');
-    } else {
-        const num = parseFloat(amountCleaned);
-        if (isNaN(num) || num < 1000 || num > 1000000) {
-            errors.push('Loan amount must be between ₱1,000 and ₱1,000,000.');
-        }
-    }
-    if (!PATTERNS.address.test(address)) {
-        errors.push('Invalid address format.');
-    }
-    if (!VALID_PURPOSES.includes(loanPurpose)) {
-        errors.push('Invalid loan purpose selected.');
-    }
-    if (!branch || branch.length < 5) {
-        errors.push('Invalid branch selection.');
-    }
-
-    return {
-        isValid: errors.length === 0,
-        errors,
-        sanitized: { fullName, contactNumber, email, loanAmount, address, loanPurpose, branch },
-    };
-}
-
-// ─── Logging helper ──────────────────────────────────────────
-function logSubmission(data, status) {
-    const logLine = `[${new Date().toISOString()}] ${status} | ${data.fullName} | ${data.email} | ${data.branch}\n`;
-    try {
-        fs.appendFileSync(LOG_PATH, logLine, 'utf-8');
-    } catch (err) {
-        console.error('[LOG] Failed to write log:', err.message);
-    }
-}
-
-// ─── API: Submit loan application ────────────────────────────
-app.post('/api/submit-loan', (req, res) => {
-    try {
-        // Validate CSRF token
-        const csrfToken = req.headers['x-csrf-token'];
-        if (!csrfToken || !csrfTokens.has(csrfToken)) {
-            console.warn('[SECURITY] CSRF validation failed. Token:', csrfToken ? csrfToken.substring(0, 20) + '...' : 'missing');
-            return res.status(403).json({ error: 'Invalid or expired CSRF token. Please refresh the page and try again.' });
-        }
-        
-        // Token remains valid for reuse within its 1-hour expiry window
-
-        // Validate & sanitize input
-        const validation = validateLoanData(req.body);
-        if (!validation.isValid) {
-            return res.status(400).json({
-                error: 'Validation failed.',
-                details: validation.errors,
-            });
-        }
-
-        const data = validation.sanitized;
-        const id = uuidv4().split('-')[0].toUpperCase();
-        const timestamp = new Date().toISOString();
-
-        // Build CSV row
-        const row = [
-            id,
-            timestamp,
-            data.fullName,
-            data.contactNumber,
-            data.email,
-            data.loanAmount,
-            data.address,
-            data.loanPurpose,
-            data.branch,
-            'PENDING',
-            'Website',
-        ];
-
-        // Append to CSV file (spreadsheet)
-        const csvRow = stringify([row]);
-        fs.appendFileSync(CSV_PATH, csvRow, 'utf-8');
-
-        // Log the submission
-        logSubmission(data, 'SUCCESS');
-
-        console.log(`[SUBMIT] ${id} — ${data.fullName} — ${data.branch}`);
-
-        res.json({
-            success: true,
-            message: 'Application submitted successfully. We will contact you within 24 hours.',
-            referenceId: id,
-        });
-
-    } catch (err) {
-        console.error('[SUBMIT] Error:', err.message);
-        res.status(500).json({ error: 'Internal server error. Please try again.' });
-    }
+app.post('/api/submit-loan', submitLimiter, (req, res) => {
+  const token = req.get('x-csrf-token');
+  if (!sameOrigin(req) || !token || (csrfTokens.get(token) || 0) < Date.now()) return res.status(403).json({ error: 'Security check expired. Refresh the page and try again.' });
+  csrfTokens.delete(token);
+  const { data, errors } = validateLoan(req.body);
+  if (errors.length) return res.status(400).json({ error: 'Please check the highlighted information.', details: errors });
+  const id = uuidv4().split('-')[0].toUpperCase();
+  const row = [id, new Date().toISOString(), data.fullName, data.contactNumber, data.email, Number(data.loanAmount).toFixed(2), data.address, data.loanPurpose, data.branch, 'PENDING', 'Website'].map(safeCsv);
+  fs.appendFileSync(CSV_PATH, stringify([row]), 'utf8');
+  res.status(201).json({ success: true, message: 'Your application has been received.', referenceId: id });
 });
-
-// ─── Admin login ─────────────────────────────────────────────
 app.post('/api/admin/login', loginLimiter, (req, res) => {
-    const { password } = req.body;
-
-    // Constant-time comparison to prevent timing attacks
-    const hash1 = crypto.createHash('sha256').update(password || '').digest('hex');
-    const hash2 = crypto.createHash('sha256').update(ADMIN_PASS).digest('hex');
-
-    if (hash1 !== hash2) {
-        return res.status(401).json({ error: 'Invalid password.' });
-    }
-
-    // Generate a simple session token
-    const sessionToken = 'admin_' + crypto.randomBytes(32).toString('hex');
-
-    res.json({
-        success: true,
-        token: sessionToken,
-        message: 'Authentication successful.',
-    });
+  if (!sameOrigin(req)) return res.status(403).json({ error: 'Request origin was rejected.' });
+  const supplied = typeof req.body.password === 'string' ? req.body.password : '';
+  const a = crypto.createHash('sha256').update(supplied).digest(), b = crypto.createHash('sha256').update(ADMIN_PASSWORD).digest();
+  if (!ADMIN_PASSWORD || !crypto.timingSafeEqual(a, b)) return res.status(401).json({ error: 'Invalid password.' });
+  const expiry = Date.now() + 8 * 60 * 60 * 1000;
+  res.cookie('kcash_admin', sign(`${expiry}.${crypto.randomBytes(16).toString('hex')}`), { httpOnly: true, secure: IS_PRODUCTION, sameSite: 'strict', maxAge: 8 * 60 * 60 * 1000, path: '/api/admin' });
+  res.json({ success: true });
 });
-
-// ─── Admin: Download CSV spreadsheet ─────────────────────────
-app.get('/api/admin/submissions', (req, res) => {
-    const authToken = req.headers['authorization'];
-    if (!authToken || !authToken.startsWith('Bearer admin_')) {
-        return res.status(401).json({ error: 'Unauthorized. Invalid or missing token.' });
-    }
-
-    try {
-        const csvData = fs.readFileSync(CSV_PATH, 'utf-8');
-        res.setHeader('Content-Type', 'text/csv');
-        res.setHeader('Content-Disposition', 'attachment; filename="loan-applications.csv"');
-        res.send(csvData);
-    } catch (err) {
-        console.error('[ADMIN] Error reading CSV:', err.message);
-        res.status(500).json({ error: 'Failed to read submissions.' });
-    }
+app.post('/api/admin/logout', requireAdmin, (req, res) => { res.clearCookie('kcash_admin', { httpOnly: true, secure: IS_PRODUCTION, sameSite: 'strict', path: '/api/admin' }); res.json({ success: true }); });
+app.get('/api/admin/submissions', requireAdmin, (req, res) => { res.set({ 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="loan-applications.csv"', 'Cache-Control': 'no-store' }); res.send(fs.readFileSync(CSV_PATH, 'utf8')); });
+app.get('/api/admin/stats', requireAdmin, (req, res) => { const rows = parseCsv(fs.readFileSync(CSV_PATH, 'utf8')).slice(1); res.set('Cache-Control', 'no-store').json({ success: true, totalSubmissions: rows.length, pending: rows.filter(r => r[9] === 'PENDING').length, lastUpdated: new Date().toISOString() }); });
+app.post('/api/admin/update-status', requireAdmin, (req, res) => {
+  if (!sameOrigin(req)) return res.status(403).json({ error: 'Request origin was rejected.' });
+  const id = clean(req.body.id, 12), status = clean(req.body.status, 20).toUpperCase();
+  if (!/^[A-F0-9]{8}$/.test(id) || !STATUSES.includes(status)) return res.status(400).json({ error: 'Invalid application or status.' });
+  const rows = parseCsv(fs.readFileSync(CSV_PATH, 'utf8')); const record = rows.slice(1).find(r => r[0] === id);
+  if (!record) return res.status(404).json({ error: 'Application not found.' });
+  record[9] = status;
+  const temp = `${CSV_PATH}.${process.pid}.tmp`; fs.writeFileSync(temp, stringify(rows), { encoding: 'utf8', mode: 0o600 }); fs.renameSync(temp, CSV_PATH);
+  res.json({ success: true });
 });
+app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
+app.use('/api', (req, res) => res.status(404).json({ error: 'API endpoint not found.' }));
+app.use((req, res) => res.status(404).sendFile(path.join(__dirname, 'public', 'index.html')));
+app.use((err, req, res, next) => { console.error('[ERROR]', err.message); if (res.headersSent) return next(err); res.status(err.type === 'entity.too.large' ? 413 : 500).json({ error: 'The request could not be completed.' }); });
 
-// ─── Admin: Get summary stats ───────────────────────────────
-app.get('/api/admin/stats', (req, res) => {
-    const authToken = req.headers['authorization'];
-    if (!authToken || !authToken.startsWith('Bearer admin_')) {
-        return res.status(401).json({ error: 'Unauthorized.' });
-    }
-
-    try {
-        const csvData = fs.readFileSync(CSV_PATH, 'utf-8');
-        const lines = csvData.trim().split('\n');
-        const totalSubmissions = lines.length > 1 ? lines.length - 1 : 0;
-
-        res.json({
-            success: true,
-            totalSubmissions,
-            lastUpdated: new Date().toISOString(),
-        });
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to read stats.' });
-    }
-});
-// ─── Admin: Update Application Status ────────────────────────
-app.post('/api/admin/update-status', express.json(), (req, res) => {
-    const authToken = req.headers['authorization'];
-    if (!authToken || !authToken.startsWith('Bearer admin_')) {
-        return res.status(401).json({ error: 'Unauthorized.' });
-    }
-
-    const { id, status } = req.body;
-    if (!id || !status) return res.status(400).json({ error: 'Missing data.' });
-
-    try {
-        const csvData = fs.readFileSync(CSV_PATH, 'utf-8');
-        const rows = csvData.trim().split('\n');
-        let updated = false;
-        let newCsv = rows[0] + '\n'; // Keep the header row
-
-        // Rebuild the CSV with the updated status
-        for (let i = 1; i < rows.length; i++) {
-            const row = rows[i];
-            if (row.startsWith(id + ',') || row.startsWith('"' + id + '"')) {
-                // Replace PENDING with DONE
-                const updatedRow = row.replace(/PENDING/, status);
-                newCsv += updatedRow + '\n';
-                updated = true;
-            } else {
-                newCsv += row + '\n';
-            }
-        }
-
-        if (updated) {
-            fs.writeFileSync(CSV_PATH, newCsv, 'utf-8');
-            res.json({ success: true });
-        } else {
-            res.status(404).json({ error: 'Client record not found.' });
-        }
-    } catch (err) {
-        console.error('[ADMIN] Update error:', err.message);
-        res.status(500).json({ error: 'Failed to update record.' });
-    }
-});
-// ─── API: Health check ───────────────────────────────────────
-app.get('/api/health', (req, res) => {
-    res.json({
-        status: 'ok',
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime(),
-    });
-});
-
-// ─── 404 handler ──────────────────────────────────────────────
-app.use((req, res) => {
-    if (req.path.startsWith('/api/')) {
-        res.status(404).json({ error: 'API endpoint not found.' });
-    } else {
-        // Let the frontend handle client-side routing
-        res.sendFile(path.join(__dirname, 'public', 'index.html'));
-    }
-});
-
-// ─── Global error handler ────────────────────────────────────
-app.use((err, req, res, next) => {
-    console.error('[ERROR] Unhandled error:', err.message);
-    res.status(500).json({ error: 'Internal server error.' });
-});
-
-// ─── Start server ────────────────────────────────────────────
-app.listen(PORT, '0.0.0.0', () => {
-    console.log('═══════════════════════════════════════════════');
-    console.log('  G&A KCash Microfinance Inc. — Server');
-    console.log(`  Port:      ${PORT}`);
-    console.log(`  Mode:      ${process.env.NODE_ENV || 'development'}`);
-    console.log(`  CSV Data:  ${CSV_PATH}`);
-    console.log('═══════════════════════════════════════════════');
-    console.log('[SECURITY] Helmet active');
-    console.log('[SECURITY] Rate limiting active (30 req/15min)');
-    console.log('[SECURITY] XSS sanitization active');
-    console.log('[SECURITY] CSRF protection active');
-    console.log('[SECURITY] Payload size limit: 10KB');
-});
+if (require.main === module) app.listen(PORT, '0.0.0.0', () => console.log(`G&A KCash listening on port ${PORT} (${IS_PRODUCTION ? 'production' : 'development'})`));
+module.exports = app;
